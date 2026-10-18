@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7fb">
+  <title>Knapsack Solver</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script src="algorithms.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="Knapsack Solver home">
+        <span class="brand-icon" aria-hidden="true">K</span>
+        <span>Knapsack <strong>Solver</strong></span>
+      </a>
+      <div class="header-actions">
+        <span class="course-label">DESIGN &amp; ANALYSIS OF ALGORITHMS</span>
+        <button id="theme-toggle" class="button button-quiet theme-toggle" type="button" aria-label="Switch to dark mode">
+          <span aria-hidden="true">◐</span> <span id="theme-label">Dark mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="page-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">ALGORITHM PLAYGROUND · 0/1 KNAPSACK</p>
+        <h1>Knapsack Solver</h1>
+        <p class="hero-copy">Compare Dynamic Programming, Greedy, and Backtracking on the same problem. See how the strategies choose, perform, and differ.</p>
+      </div>
+      <div class="hero-badge"><span class="status-dot"></span> Ready to solve</div>
+    </section>
+
+    <section class="card input-card" aria-labelledby="input-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">01 / DEFINE YOUR PROBLEM</p>
+          <h2 id="input-heading">Your items</h2>
+        </div>
+        <label class="capacity-control" for="capacity">
+          <span>Bag capacity</span>
+          <span class="input-with-unit"><input id="capacity" type="number" min="1" step="1" value="50"><span>units</span></span>
+        </label>
+      </div>
+
+      <div class="item-table-wrap">
+        <table class="item-table">
+          <thead><tr><th scope="col">Item name</th><th scope="col">Weight</th><th scope="col">Value</th><th scope="col" class="remove-heading"><span class="sr-only">Remove item</span></th></tr></thead>
+          <tbody id="items-body"></tbody>
+        </table>
+      </div>
+      <div id="input-error" class="message message-error" role="alert" hidden></div>
+      <div class="input-actions">
+        <div class="button-group">
+          <button id="add-item" class="button button-secondary" type="button"><span aria-hidden="true">＋</span> Add item</button>
+          <button id="random-items" class="button button-secondary" type="button">✦ Generate random</button>
+          <button id="greedy-example" class="button button-secondary" type="button">↻ Greedy-fails example</button>
+          <button id="clear-all" class="button button-quiet" type="button">Clear all</button>
+        </div>
+        <span id="item-count" class="muted">0 items</span>
+      </div>
+      <div class="solve-row">
+        <p class="muted">Each item can be selected at most once.</p>
+        <button id="solve" class="button button-primary" type="button">Solve problem <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section id="results-section" class="card results-card" aria-labelledby="results-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">02 / COMPARE THE RESULTS</p>
+          <h2 id="results-heading">Algorithm results</h2>
+        </div>
+        <span id="solution-summary" class="summary-pill">Solve a problem to see results</span>
+      </div>
+      <div id="result-message" class="message" role="status" hidden></div>
+      <div class="table-scroll">
+        <table class="results-table">
+          <thead><tr><th>Algorithm</th><th>Total value</th><th>Total weight</th><th>Selected items</th><th>Time (ms)</th><th>Nodes explored</th><th>Optimal?</th></tr></thead>
+          <tbody id="results-body"><tr><td colspan="7" class="empty-state">Your comparison will appear here after you solve a problem.</td></tr></tbody>
+        </table>
+      </div>
+      <p class="greedy-note"><strong>Greedy caveat:</strong> Greedy sorts by value-to-weight ratio. It is fast, but is <em>not guaranteed to find the optimal solution</em> for 0/1 knapsack.</p>
+    </section>
+
+    <section class="visual-grid">
+      <article class="card dp-card">
+        <div class="section-heading compact-heading">
+          <div><p class="eyebrow">DYNAMIC PROGRAMMING</p><h2>DP table</h2></div>
+          <span class="legend"><i></i> Backtracking path</span>
+        </div>
+        <div id="dp-table-container" class="dp-table-container"><p class="placeholder-copy">Solve a problem to inspect its DP table.</p></div>
+      </article>
+      <article class="card chart-card">
+        <div class="section-heading compact-heading">
+          <div><p class="eyebrow">CURRENT INPUT</p><h2>Value by algorithm</h2></div>
+        </div>
+        <div class="chart-wrap"><canvas id="value-chart" aria-label="Bar chart comparing algorithm values"></canvas><p id="chart-unavailable" class="chart-fallback" hidden>Charts need an internet connection to load Chart.js.</p></div>
+      </article>
+    </section>
+
+    <section class="card benchmark-card" aria-labelledby="benchmark-heading">
+      <div class="section-heading benchmark-heading">
+        <div><p class="eyebrow">03 / STUDY THE GROWTH</p><h2 id="benchmark-heading">Performance analysis</h2><p class="muted">Run the algorithms on generated inputs and compare their scaling.</p></div>
+        <div class="benchmark-controls">
+          <label class="checkbox-label"><input id="log-scale" type="checkbox"> Log time axis</label>
+          <button id="run-benchmark" class="button button-secondary" type="button">▶ Run benchmark</button>
+        </div>
+      </div>
+      <div id="benchmark-status" class="message" role="status" hidden></div>
+      <div class="benchmark-grid">
+        <div class="benchmark-chart"><h3>Running time vs. number of items</h3><div class="chart-wrap"><canvas id="time-chart" aria-label="Line chart comparing algorithm runtimes"></canvas></div></div>
+        <div class="benchmark-chart"><h3>Backtracking nodes explored</h3><div class="chart-wrap"><canvas id="nodes-chart" aria-label="Line chart comparing backtracking nodes"></canvas></div></div>
+      </div>
+      <p class="benchmark-footnote">Benchmark times vary by browser and device. Plain recursion is capped at 20 items in the benchmark; larger instances are skipped to keep the page responsive.</p>
+    </section>
+
+    <section class="card explanation-card" aria-labelledby="explanation-heading">
+      <div class="section-heading">
+        <div><p class="eyebrow">04 / UNDERSTAND THE METHODS</p><h2 id="explanation-heading">Algorithm guide</h2></div>
+      </div>
+      <div class="algorithm-guides">
+        <article class="algorithm-guide">
+          <span class="algorithm-number">01</span><h3>Dynamic Programming</h3>
+          <p>Builds solutions for every prefix of the items and every capacity. Each cell asks whether the current item improves the best value so far.</p>
+          <pre><code>dp[0][c] = 0
+for i = 1..n:
+  for c = 0..W:
+    dp[i][c] = dp[i-1][c]
+    if weight[i] ≤ c:
+      dp[i][c] = max(dp[i][c],
+                     value[i] + dp[i-1][c-weight[i]])</code></pre>
+          <p><strong>Time:</strong> O(nW) · <strong>Space:</strong> O(nW)</p>
+          <p class="guide-pros"><strong>Pros:</strong> Always optimal; reconstructs the selected items.<br><strong>Cons:</strong> Capacity-dependent memory and runtime.</p>
+        </article>
+        <article class="algorithm-guide">
+          <span class="algorithm-number">02</span><h3>Greedy by ratio</h3>
+          <p>Sorts by value per unit of weight, then takes each item that fits. This is optimal for fractional knapsack, but not in general for 0/1 knapsack.</p>
+          <pre><code>sort items by value / weight
+for item in sorted items:
+  if item.weight fits:
+    take item</code></pre>
+          <p><strong>Time:</strong> O(n log n) · <strong>Space:</strong> O(n)</p>
+          <p class="guide-pros"><strong>Pros:</strong> Very fast and easy to understand.<br><strong>Cons:</strong> Can miss the optimal 0/1 solution.</p>
+        </article>
+        <article class="algorithm-guide">
+          <span class="algorithm-number">03</span><h3>Backtracking + pruning</h3>
+          <p>Explores include/exclude choices. It prunes overweight branches and branches whose fractional-knapsack upper bound cannot beat the best solution already found.</p>
+          <pre><code>search(i, weight, value):
+  update best with current choice
+  if overweight or bound ≤ best: return
+  search(i+1, include item i)
+  search(i+1, exclude item i)</code></pre>
+          <p><strong>Time:</strong> O(2<sup>n</sup>) worst case · <strong>Space:</strong> O(n)</p>
+          <p class="guide-pros"><strong>Pros:</strong> Exact; bounds can skip large parts of the tree.<br><strong>Cons:</strong> Still exponential in the worst case.</p>
+        </article>
+        <article class="algorithm-guide">
+          <span class="algorithm-number">04</span><h3>Plain recursion</h3>
+          <p>Evaluates both include and exclude choices for every item without pruning. This provides a baseline for measuring the impact of branch-and-bound.</p>
+          <pre><code>search(i, weight, value):
+  if i == n: update best; return
+  search(i+1, include item i)
+  search(i+1, exclude item i)</code></pre>
+          <p><strong>Time:</strong> O(2<sup>n</sup>) · <strong>Space:</strong> O(n)</p>
+          <p class="guide-pros"><strong>Pros:</strong> Simple exact reference implementation.<br><strong>Cons:</strong> Explores every subset; skipped above 25 items.</p>
+        </article>
+      </div>
+      <h3 class="complexity-heading">Complexity summary</h3>
+      <div class="table-scroll">
+        <table class="complexity-table">
+          <thead><tr><th>Algorithm</th><th>Time complexity</th><th>Space complexity</th><th>Always optimal?</th></tr></thead>
+          <tbody>
+            <tr><td>Dynamic Programming</td><td>O(nW)</td><td>O(nW)</td><td>Yes</td></tr>
+            <tr><td>Greedy</td><td>O(n log n)</td><td>O(n)</td><td>No</td></tr>
+            <tr><td>Backtracking + pruning</td><td>O(2<sup>n</sup>) worst case</td><td>O(n)</td><td>Yes</td></tr>
+            <tr><td>Plain recursion</td><td>O(2<sup>n</sup>)</td><td>O(n)</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><span>Knapsack Solver </span><span>Built for learning algorithms, one item at a time.</span></footer>
+</body>
+</html>
